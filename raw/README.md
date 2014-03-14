@@ -1,0 +1,1 @@
+This directory is for storing the data files tomatoes.txt and omdb.txt.
