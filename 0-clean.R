@@ -27,7 +27,7 @@ if (length(bad_id_idx) > 0) {
 omdb <- plyr::mutate(omdb_raw,
   Genre = as.factor(Genre),
   imdbVotes = as.integer(gsub(",", "", imdbVotes)),
-  Runtime = {
+  Runtime = local({
     # Convert strings of form "1 h 20 min", "1 h", and "15 min" to numeric minutes
     h <- Runtime
     h[!grepl(" h", h)] <- 0
@@ -36,16 +36,16 @@ omdb <- plyr::mutate(omdb_raw,
     m[!grepl(" min", m)] <- 0
     m <- as.numeric(sub(".*?(\\d+) min", "\\1", m))
     h*60 + m
-  },
+  }),
   Poster = NULL,
   Plot = NULL,
   FullPlot = NULL,
-  Oscars = {
+  Oscars = local({
     awards <- Awards
     awards[!grepl("^Won \\d+ Oscar", awards)] <- "0"
     awards <- sub("Won (\\d+) Oscar.*", "\\1", awards)
     as.integer(awards)
-  }
+  })
 )
 
 
@@ -59,7 +59,7 @@ tomatoes_raw <- read.table("raw/tomatoes.txt", header = TRUE,
 # Clean up Tomatoes data
 tomatoes <- plyr::mutate(tomatoes_raw,
   userReviews = as.integer(gsub(",", "", userReviews)),
-  BoxOffice = {
+  BoxOffice = local({
     bo <- sub("^\\$", "", BoxOffice)
     val <- as.numeric(sub("M|k", "", bo))
     k <- grepl("k", bo)
@@ -67,7 +67,7 @@ tomatoes <- plyr::mutate(tomatoes_raw,
     m <- grepl("M", bo)
     val[m] <- val[m] * 1000000
     val
-  }
+  })
 )
 
 # Only keep omdb entries for which there is tomatoes data, and there are
@@ -82,7 +82,7 @@ drop_idx <-
   # NA for running time
   (omdb$Title == "Short Term 12" & omdb$Year == 2008)
 
-omdb <- omdb[!drop_idx]
+omdb <- omdb[!drop_idx, ]
 
 
 
@@ -90,7 +90,7 @@ omdb <- omdb[!drop_idx]
 unlink("movies.db")
 
 # Store in database
-xdb <- src_sqlite("movies.db")
+db <- src_sqlite("movies.db")
 omdb <- copy_to(db, omdb, temporary = FALSE, indexes = list("ID", "Year"))
 tomatoes <- copy_to(db, tomatoes, temporary = FALSE,
   indexes = list("ID", "Meter", "Rating"))
