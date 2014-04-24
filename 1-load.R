@@ -8,8 +8,8 @@ tomatoes <- tbl(db, "tomatoes")
 # Join the tables, keeping only the movies that have any reviews from Rotten Tomatoes
 movies <- inner_join(omdb, tomatoes, by = "ID") %>%
   filter(Reviews > 0) %>%
-  select(ID, imdbID, Title, Year, Rating.x, Runtime, Genre, Released, Director, Writer,
-    Cast, imdbRating, imdbVotes, Language, Country, Oscars, Rating.y, Meter,
+  select(ID, imdbID, Title, Year, Rating_m = Rating.x, Runtime, Genre, Released, Director, Writer,
+    Cast, imdbRating, imdbVotes, Language, Country, Oscars, Rating = Rating.y, Meter,
     Reviews, Fresh, Rotten, userMeter, userRating, userReviews, BoxOffice, Production)
 
 
