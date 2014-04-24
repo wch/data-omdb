@@ -7,18 +7,14 @@ min_reviews <- 10
 # With the Feb 4, 2014 version of the dataset from omdbapi.com,
 # the following IDs have an extra tab in the Plot field. I've removed them
 # by hand. This should be automated in the future.
-# 192215
-# 1000056
-# 1103274
 # 1308026
-# 1806920
 omdb_raw <- read.table("raw/omdb.txt", header = TRUE,
   sep = "\t", quote = "", na.strings = c("", "N/A"), stringsAsFactors = FALSE,
   comment.char = "", fileEncoding = "latin1"
 )
 
 # Do some rows have problems?
-bad_id_idx <- which(is.na(as.integer(omdb$ID)))
+bad_id_idx <- which(is.na(as.integer(omdb_raw$ID)))
 if (length(bad_id_idx) > 0) {
   stop("Problem with ID fields for some entries. It's possible the previous entries had extra tabs.")
 }
@@ -90,7 +86,7 @@ omdb <- omdb[!drop_idx, ]
 unlink("movies.db")
 
 # Store in database
-db <- src_sqlite("movies.db")
+db <- src_sqlite("movies.db", create = TRUE)
 omdb <- copy_to(db, omdb, temporary = FALSE, indexes = list("ID", "Year"))
 tomatoes <- copy_to(db, tomatoes, temporary = FALSE,
   indexes = list("ID", "Meter", "Rating"))
